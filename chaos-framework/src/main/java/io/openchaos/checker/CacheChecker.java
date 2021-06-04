@@ -68,7 +68,7 @@ public class CacheChecker implements Checker {
             cacheTestResult = checkInner();
             MAPPER.writeValue(new File(filePath), cacheTestResult);
         } catch (Exception e) {
-            log.error("MQChecker check fail", e);
+            log.error("CacheChecker check fail", e);
         }
 
         return cacheTestResult;

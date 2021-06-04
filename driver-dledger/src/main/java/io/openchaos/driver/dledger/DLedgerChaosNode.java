@@ -27,11 +27,11 @@ public class DLedgerChaosNode implements CacheChaosNode {
     private String node;
     private List<String> nodes;
     private DLedgerConfig dLedgerConfig;
-    private String installDir = "dledger-chaos-test";
+    private String installDir = "/root/dledger-chaos-test";
     private String dledgerVersion = "0.2.0";
     private String storeBaseDir = "/tmp/dledgerstore";
     private String group = "default";
-    private static final String DLEDGER_PROCESS_NAME = "DLedger.jar";
+    private String dledgerProcessName;
 
     public DLedgerChaosNode(String node, List<String> nodes, DLedgerConfig dLedgerConfig) {
         this.node = node;
@@ -50,6 +50,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
         if (dLedgerConfig.group != null && !dLedgerConfig.group.isEmpty()) {
             this.group = dLedgerConfig.group;
         }
+        this.dledgerProcessName = String.format("DLedger%s.jar", dledgerVersion);
     }
 
     @Override public void setup() {
@@ -57,10 +58,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
             //Download dledger package
             log.info("Node {} download dledger...", node);
             SshUtil.execCommand(node, String.format("rm -rf %s; mkdir %s", installDir, installDir));
-            SshUtil.execCommandInDir(node, installDir,
-                String.format("wget https://github.com/openmessaging/openmessaging-storage-dledger/archive/dledger-%s.zip -O dledger.zip", dledgerVersion),
-                "unzip -o dledger.zip", "rm -f dledger.zip", "mv openmessaging-storage-dledger*/* .", "rm -rf openmessaging-storage-dledger*");
-            SshUtil.execCommandInDir(node, installDir, "mvn clean install -DskipTests");
+            SshUtil.execCommandInDir(node, installDir, String.format("cp /openchaos/driver-dledger/%s ./", dledgerProcessName));
         } catch (Exception e) {
             log.error("Node {} setup dledger node failed", node, e);
             throw new RuntimeException(e);
@@ -81,7 +79,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
         try {
             //Start dledger
             log.info("Node {} start dledger...", node);
-            String cmdline = String.format("nohup java -jar target/DLedger.jar server -g %s -i %s -p '%s' -s %s > dledger.log 2>&1 &",
+            String cmdline = String.format("nohup java -jar %s server -g %s -i %s -p '%s' -s %s > dledger.log 2>&1 &", dledgerProcessName,
                 group, "n" + nodes.indexOf(node), getPeers(), storeBaseDir);
             log.info("Node {} execute cmd: " + cmdline);
             SshUtil.execCommandInDir(node, installDir, cmdline);
@@ -93,7 +91,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
 
     @Override public void stop() {
         try {
-            KillProcessUtil.kill(node, DLEDGER_PROCESS_NAME);
+            KillProcessUtil.kill(node, dledgerProcessName);
         } catch (Exception e) {
             log.error("Node {} stop dledger processes failed", node, e);
             throw new RuntimeException(e);
@@ -102,7 +100,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
 
     @Override public void kill() {
         try {
-            KillProcessUtil.forceKill(node, DLEDGER_PROCESS_NAME);
+            KillProcessUtil.forceKill(node, dledgerProcessName);
         } catch (Exception e) {
             log.error("Node {} stop dledger processes failed", node, e);
             throw new RuntimeException(e);
@@ -111,7 +109,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
 
     @Override public void pause() {
         try {
-            PauseProcessUtil.suspend(node, DLEDGER_PROCESS_NAME);
+            PauseProcessUtil.suspend(node, dledgerProcessName);
         } catch (Exception e) {
             log.error("Node {} stop dledger processes failed", node, e);
             throw new RuntimeException(e);
@@ -120,7 +118,7 @@ public class DLedgerChaosNode implements CacheChaosNode {
 
     @Override public void resume() {
         try {
-            PauseProcessUtil.resume(node, DLEDGER_PROCESS_NAME);
+            PauseProcessUtil.resume(node, dledgerProcessName);
         } catch (Exception e) {
             log.error("Node {} stop dledger processes failed", node, e);
             throw new RuntimeException(e);

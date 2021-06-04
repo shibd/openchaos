@@ -3,3 +3,24 @@ services:
   control:
     volumes:
     - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
+  n1:
+    volumes:
+    - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
+  n2:
+    volumes:
+    - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
+  n3:
+    volumes:
+    - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
+  n4:
+    volumes:
+    - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
+  n5:
+    volumes:
+    - ${CHAOS_ROOT}:/openchaos
+    - /Users/baozi/.m2:/root/.m2
